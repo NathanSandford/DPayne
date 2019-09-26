@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Job name:
+#SBATCH --job-name=train_NN
+#
+# Account:
+#SBATCH --account=co_dweisz
+#
+# Partition:
+#SBATCH --partition=savio2_gpu
+#
+# QoS:
+#SBATCH --qos=savio_lowprio
+#
+# Number of Nodes:
+#SBATCH --nodes=1
+#
+# Number of tasks:
+#SBATCH --ntasks=1
+#
+# Number of GPUs:
+#SBATCH --gres=gpu:1
+#
+# Processors per task:
+#SBATCH --cpus-per-task=2
+#
+# Wall clock limit:
+#SBATCH --time=24:00:00
+#
+#SBATCH --output=logs/train_NN.txt
+#
+## Commands to run:
+
+echo "Loading Module"
+module load python
+
+echo "Beginning Script"
+python train_NN.py NN_data/KGiant_LAMOST_17_mcmc_conv NN_data/KGiant_LAMOST_17_NN.npz

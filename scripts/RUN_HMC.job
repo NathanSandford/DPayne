@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Job name:
+#SBATCH --job-name=run_hmc
+#
+# Account:
+#SBATCH --account=co_dweisz
+#
+# Partition:
+#SBATCH --partition=savio2
+#
+# QoS:
+#SBATCH --qos=dweisz_savio2_normal
+#
+# Number of Nodes
+#SBATCH --nodes=1
+#
+# Wall clock limit:
+#SBATCH --time=1:00:00
+#
+#SBATCH --output=logs/run_hmc.txt
+#
+# Email upon completion:
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan_sandford@berkeley.edu
+#
+## Commands to run:
+
+echo "Loading Module"
+module load python
+
+echo "Beginning Script"
+python run_HMC.py ../NN_data/KGiant_LAMOST_17_NN.npz 100 ../NN_data/KGiant_LAMOST_17_samples.h5
