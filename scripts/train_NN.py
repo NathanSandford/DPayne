@@ -1,9 +1,9 @@
 import sys
 sys.path.append('/global/scratch/nathan_sandford/DPayne/')
 from pathlib import Path
+import numpy as np
 import pandas as pd
 from DPayne.utils import split_data
-from DPayne.neuralnetworks import read_in_neural_network
 from The_Payne import training
 
 input_dir = Path('/global/scratch/nathan_sandford/kurucz/kurucz_out/synthetic_spectra/HMC_valid/R6500')
@@ -57,8 +57,5 @@ model_params = dict(dim_in=training_labels.shape[1],
                     mask_size=mask_size,
                     num_pixel=training_spectra.shape[1])
 np.savez(model_param_output_file, **model_params)
-
-
-
 
 print('Training Complete!')
