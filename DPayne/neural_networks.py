@@ -39,6 +39,10 @@ class PaynePerceptron(torch.nn.Module):
     def forward(self, x):
         return self.features(x)
 
+    def load(self, path):
+        state_dict = torch.load(path)
+        self.load_state_dict(state_dict)
+
 
 # ---------------------------------------------------------------------------------------------------
 # resnet models
@@ -102,6 +106,10 @@ class PayneResnet(torch.nn.Module):
 
         x7 = self.deconv7(x6)[:, 0, : self.num_pixel]
         return x7
+
+    def load(self, path):
+        state_dict = torch.load(path)
+        self.load_state_dict(state_dict)
 
 
 # ===================================================================================================
