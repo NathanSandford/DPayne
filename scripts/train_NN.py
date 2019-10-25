@@ -77,13 +77,13 @@ assert base_dir.is_dir(), f'Directory {base_dir} does not exist'
 if args.spec_dir:
     spec_dir = base_dir.joinpath(args.spec_dir)
 else:
-    spec_dir = base_dir.joinpath(spec_dir)
+    spec_dir = base_dir.joinpath(spec_dir.name)
 assert spec_dir.is_dir(), f'Directory {spec_dir} does not exist'
 
 if args.nn_dir:
     nn_dir = base_dir.joinpath(args.nn_dir)
 else:
-    nn_dir = base_dir.joinpath(nn_dir)
+    nn_dir = base_dir.joinpath(nn_dir.name)
 assert nn_dir.is_dir(), f'Directory {nn_dir} does not exist'
 
 if args.elements_to_train_on:
