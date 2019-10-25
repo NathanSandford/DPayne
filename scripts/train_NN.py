@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 import pandas as pd
 from DPayne.utils import split_data
-from The_Payne import training
+from DPayne import training
 
 description = \
     '''
