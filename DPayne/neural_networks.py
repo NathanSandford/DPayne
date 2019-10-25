@@ -215,8 +215,7 @@ def train_nn(
             dim_in, num_neurons, num_features, mask_size, num_pixel
         )
     if continue_from_model:
-        state_dict = torch.load(model_file)
-        model.load_state_dict(state_dict)
+        model.load(model_file)
 
     model.cuda()
     model.train()
