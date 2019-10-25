@@ -35,4 +35,4 @@ echo "Loading Module"
 module load python
 
 echo "Beginning Script"
-python train_NN.py NN_data/KGiant_LAMOST_17_mcmc_conv NN_data/KGiant_LAMOST_17_NN.npz
+python train_NN.py R6500 R6500.h5 'resnet' --rs 6787
