@@ -23,18 +23,6 @@ def read_in_neural_network(nn_file):
     return NN_coeffs
 
 
-def sigmoid(z):
-    return 1.0/(1.0 + np.exp(-z))
-
-
-def scale_labels(labels, x_min, x_max):
-    return (labels - x_min) / (x_max - x_min) - 0.5
-
-
-def rescale_labels(scaled_labels, x_min, x_max):
-    return (scaled_labels + 0.5) * (x_max - x_min) + x_min
-
-
 def get_spectrum_from_nn(labels, nn_coeffs, nhidden, scaled=False, method='pix_by_pix'):
     """
 

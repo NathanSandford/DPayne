@@ -6,7 +6,7 @@ import pymc3 as pm
 from pymc3.backends import HDF5
 from pymc3.backends.tracetab import trace_to_dataframe
 import theano.tensor as tt
-from DPayne.neuralnetworks import NeuralNet, sigmoid
+from DPayne.neuralnetworks_deprecated import NeuralNet, sigmoid
 from corner import corner
 import matplotlib.pyplot as plt
 

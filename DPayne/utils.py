@@ -20,6 +20,14 @@ def split_data(spectra, labels, labels_to_train_on, frac_train=0.75, randomize=F
     return training_labels, training_spectra, validation_labels, validation_spectra
 
 
+def scale_labels(labels, x_min, x_max):
+    return (labels - x_min) / (x_max - x_min) - 0.5
+
+
+def rescale_labels(scaled_labels, x_min, x_max):
+    return (scaled_labels + 0.5) * (x_max - x_min) + x_min
+
+
 def doppler_shift(wave, spec, RV):
     """
 

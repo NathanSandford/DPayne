@@ -20,13 +20,14 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 from . import radam
+from .utils import scale_labels
 
 
 # ===================================================================================================
 # simple multi-layer perceptron model
-class Payne_perceptron(torch.nn.Module):
+class PaynePerceptron(torch.nn.Module):
     def __init__(self, dim_in, num_neurons, num_pixel):
-        super(Payne_perceptron, self).__init__()
+        super(PaynePerceptron, self).__init__()
         self.features = torch.nn.Sequential(
             torch.nn.Linear(dim_in, num_neurons),
             torch.nn.LeakyReLU(),
@@ -41,11 +42,9 @@ class Payne_perceptron(torch.nn.Module):
 
 # ---------------------------------------------------------------------------------------------------
 # resnet models
-
-
-class Payne_resnet(torch.nn.Module):
+class PayneResnet(torch.nn.Module):
     def __init__(self, dim_in, num_neurons, num_features, mask_size, num_pixel):
-        super(Payne_resnet, self).__init__()
+        super(PayneResnet, self).__init__()
         self.features = torch.nn.Sequential(
             torch.nn.Linear(dim_in, num_neurons),
             torch.nn.LeakyReLU(),
@@ -107,7 +106,7 @@ class Payne_resnet(torch.nn.Module):
 
 # ===================================================================================================
 # train neural networks
-def neural_net(
+def train_nn(
     training_labels,
     training_spectra,
     validation_labels,
@@ -179,8 +178,8 @@ def neural_net(
     # scale the labels, optimizing neural networks is easier if the labels are more normalized
     x_max = np.max(training_labels, axis=0)
     x_min = np.min(training_labels, axis=0)
-    x = (training_labels - x_min) / (x_max - x_min) - 0.5
-    x_valid = (validation_labels - x_min) / (x_max - x_min) - 0.5
+    x = scale_labels(training_labels, x_min, x_max)
+    x_valid = scale_labels(validation_labels, x_min, x_max)
 
     # save scaling relation
     np.savez(scaling_file, x_min=x_min, x_max=x_max)
@@ -202,9 +201,9 @@ def neural_net(
 
     # initiate Payne and optimizer
     if arch_type == "perceptron":
-        model = Payne_perceptron(dim_in, num_neurons, num_pixel)
+        model = PaynePerceptron(dim_in, num_neurons, num_pixel)
     elif arch_type == "resnet":
-        model = Payne_resnet(
+        model = PayneResnet(
             dim_in, num_neurons, num_features, mask_size, num_pixel
         )
     if continue_from_model:
