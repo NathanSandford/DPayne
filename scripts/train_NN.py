@@ -140,7 +140,7 @@ Train The Payne
 '''
 print(f'Training on {training_spectra.shape[0]} spectra')
 print(f'Validating w/ {validation_spectra.shape[0]} spectra')
-print(f'Labels: {" ".join(training_labels)}')
+print(f'Labels: {" ".join(labels_to_train_on)}')
 training_loss, validation_loss = training.neural_net(training_labels=training_labels,
                                                      training_spectra=training_spectra,
                                                      validation_labels=validation_labels,
