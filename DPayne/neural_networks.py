@@ -177,7 +177,8 @@ def train_nn(
     nn_dir = Path(nn_dir)
     scaling_file = nn_dir.joinpath(f'{model_name}_scaling.npz')
     model_file = nn_dir.joinpath(f'{model_name}_model.pt')
-    loss_file = nn_dir.joinpath(f'{model_name}_loss.pt')
+    loss_file = nn_dir.joinpath(f'{model_name}_loss.npz')
+    print(loss_file)
 
     # run on cuda
     dtype = torch.cuda.FloatTensor
