@@ -40,14 +40,14 @@ parser.add_argument("model_name", help="Model name")
 parser.add_argument("spec_file", help="File containing training spectra")
 parser.add_argument("arch_type", help="NN architecture ('perceptron' or 'resnet')")
 
-parser.add_argument("--base_dir", "-b", help=f"Base Directory (default: {base_dir.name})")
-parser.add_argument("--spec_dir", "-b", help=f"Directory of training spec (default: {spec_dir.name})")
-parser.add_argument("--nn_dir", "-b", help=f"Output directory for NN (default: {nn_dir.name})")
+parser.add_argument("--base_dir", "-bdir", help=f"Base Directory (default: {base_dir.name})")
+parser.add_argument("--spec_dir", "-sdir", help=f"Directory of training spec (default: {spec_dir.name})")
+parser.add_argument("--nn_dir", "-ndir", help=f"Output directory for NN (default: {nn_dir.name})")
 
 
 parser.add_argument("--elements_to_train_on", "-X", nargs='+',
                     help=f"Elements to train on (default: {' '.join(elements_to_train_on)})")
-parser.add_argument("--other_to_train_on", "-X", nargs='+',
+parser.add_argument("--other_to_train_on", "-oX", nargs='+',
                     help=f"Other labels to train on (default: {' '.join(other_to_train_on)})")
 parser.add_argument("--frac_train", "-frac", type=float,
                     help=f"Fraction of spectra to train on (default: {frac_train})")
