@@ -4,6 +4,8 @@ import numpy as np
 def split_data(spectra, labels, labels_to_train_on, frac_train=0.75, randomize=False, random_state=None):
     n_train = int(frac_train * spectra.shape[1])
     if randomize:
+        spectra.columns = np.arange(spectra.shape[1])
+        labels.columns = np.arange(labels.shape[1])
         training_sample = spectra.sample(n_train, axis=1, random_state=random_state).columns
         validation_sample = list(set(training_sample) ^ set(labels.columns))
         training_spectra = spectra[training_sample].values.T
