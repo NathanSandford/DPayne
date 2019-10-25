@@ -51,10 +51,10 @@ parser.add_argument("--other_to_train_on", "-oX", nargs='+',
                     help=f"Other labels to train on (default: {' '.join(other_to_train_on)})")
 parser.add_argument("--frac_train", "-frac", type=float,
                     help=f"Fraction of spectra to train on (default: {frac_train})")
-parser.add_argument("--random_state", "-rand", type=float,
+parser.add_argument("--random_state", "-rand", type=int,
                     help=f"Random state for sampling training spectra (default: {random_state})")
 
-parser.add_argument("--num_neuron", "-Nn", type=int,
+parser.add_argument("--num_neurons", "-Nn", type=int,
                     help=f"Number of neurons (default: {num_neurons})")
 parser.add_argument("--num_steps", "-Ns", type=int,
                     help=f"Number of steps (default: {num_steps})")
