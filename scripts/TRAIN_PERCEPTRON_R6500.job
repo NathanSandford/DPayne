@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# Job name:
+#SBATCH --job-name=train_NN_R6500p
+#
+# Account:
+#SBATCH --account=co_dweisz
+#
+# Partition:
+#SBATCH --partition=savio2_gpu
+#
+# QoS:
+#SBATCH --qos=savio_lowprio
+#
+# Number of Nodes:
+#SBATCH --nodes=1
+#
+# Number of tasks:
+#SBATCH --ntasks=1
+#
+# Number of GPUs:
+#SBATCH --gres=gpu:1
+#
+# Processors per task:
+#SBATCH --cpus-per-task=2
+#
+# Wall clock limit:
+#SBATCH --time=48:00:00
+#
+# Logfile:
+#SBATCH --output=logs/train_NN_R6500p.txt
+#
+# Email when finished:
+# SBATCH --mail-type=END
+# SBATCH --mail-user=nathan_sandford@berkeley.edu
+#
+## Commands to run:
+
+echo "Loading Module"
+module load python
+source activate payne
+
+echo "Beginning Script"
+python train_NN.py R6500p R6500.h5 'perceptron' --rand 6787
