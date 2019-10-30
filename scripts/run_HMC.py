@@ -140,7 +140,7 @@ Generate Mock Spectrum
 '''
 theta_true = np.zeros(model.dim_in)
 spec_true = model.nn_tt(theta_true)
-spec_true += 1/snr * spec_true * np.random.normal(size=spec_true.shape)
+spec_true += 1/snr * spec_true * np.random.normal(size=spec_true.shape[0])
 
 
 '''
