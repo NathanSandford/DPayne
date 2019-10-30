@@ -43,7 +43,7 @@ Parse Args
 '''
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("model_name", help="Model name")
-parser.add_argument("snr", help="S/N of the Spectrum")
+parser.add_argument("snr", type=int, help="S/N of the Spectrum")
 
 parser.add_argument("--base_dir", "-bdir", help=f"Base Directory (default: {base_dir.name})")
 parser.add_argument("--nn_dir", "-ndir", help=f"Directory of NN files (default: {nn_dir.name})")
