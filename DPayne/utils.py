@@ -1,9 +1,4 @@
-import yaml
 import numpy as np
-
-from pathlib import Path
-import torch
-from .neural_networks import PaynePerceptron, PayneResnet
 
 
 def split_data(spectra, labels, labels_to_train_on, frac_train=0.75, randomize=False, random_state=None):
