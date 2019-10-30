@@ -16,11 +16,53 @@ convolved to the appropriate R (~22500 for APOGEE) with the APOGEE LSF.
 """
 
 from pathlib import Path
+import yaml
 import numpy as np
 import torch
 from torch.autograd import Variable
 from . import radam
 from .utils import scale_labels
+
+
+class Model:
+    def __init__(self, model_par):
+        self.parameters = model_par
+        self.name = model_par['name']
+        self.arch_type = model_par['arch_type']
+        self.num_pixel = model_par['num_pixel']
+        self.labels = model_par['labels']
+        self.dim_in = len(self.labels)
+        self.num_neurons = model_par['num_neurons']
+        if self.arch_type == 'perceptron':
+            self.nn = PaynePerceptron(dim_in=self.dim_in,
+                                         num_neurons=self.num_neurons,
+                                         num_pixel=self.num_pixel)
+        elif self.arch_type == 'resnet':
+            self.num_features = model_par['num_features']
+            self.mask_size = model_par['mask_size']
+            self.nn = PayneResnet(dim_in=self.dim_in,
+                                     num_neurons=self.num_neurons,
+                                     num_features=self.num_features,
+                                     mask_size=self.mask_size,
+                                     num_pixel=self.num_pixel)
+        self.x_min = None
+        self.x_max = None
+        self.training_loss = None
+        self.validation_loss = None
+
+    def load_model(self, model_file):
+        state_dict = torch.load(model_file)
+        self.nn.load_state_dict(state_dict)
+
+    def load_scaling(self, scaling_file):
+        with np.load(scaling_file) as tmp:
+            self.x_min = tmp['x_min']
+            self.x_max = tmp['x_max']
+
+    def load_loss(self, loss_file):
+        with np.load(loss_file) as tmp:
+            self.training_loss = tmp['training_loss']
+            self.validation_loss = tmp['validation_loss']
 
 
 # ===================================================================================================
@@ -212,9 +254,7 @@ def train_nn(
     if arch_type == "perceptron":
         model = PaynePerceptron(dim_in, num_neurons, num_pixel)
     elif arch_type == "resnet":
-        model = PayneResnet(
-            dim_in, num_neurons, num_features, mask_size, num_pixel
-        )
+        model = PayneResnet(dim_in, num_neurons, num_features, mask_size, num_pixel)
     if continue_from_model:
         model.load(model_file)
 
@@ -311,3 +351,17 @@ def train_nn(
     )
 
     return
+
+
+def load_trained_model(model_name, nn_dir):
+    modelpar_file = Path(nn_dir).joinpath(f'{model_name}_par.yml')
+    model_file = Path(nn_dir).joinpath(f'{model_name}_model.pt')
+    scaling_file = Path(nn_dir).joinpath(f'{model_name}_scaling.npz')
+    loss_file = Path(nn_dir).joinpath(f'{model_name}_loss.npz')
+    with open(modelpar_file, 'r') as infile:
+        model_par = yaml.safe_load(infile)
+    model = Model(model_par)
+    model.load_model(model_file)
+    model.load_scaling(scaling_file)
+    model.load_loss(loss_file)
+    return model

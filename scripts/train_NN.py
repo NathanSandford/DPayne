@@ -144,7 +144,7 @@ if arch_type == 'perceptron':
                      num_neurons=num_neurons,
                      random_state=random_state,
                      )
-if arch_type == 'resnet':
+elif arch_type == 'resnet':
     model_par = dict(name=model_name,
                      arch_type=arch_type,
                      labels=labels_to_train_on,
@@ -155,7 +155,7 @@ if arch_type == 'resnet':
                      random_state=random_state,
                      )
 with open(f'{model_name}_par.yml', 'wt') as outfile:
-    yaml.dump(model_par, outfile, sort_keys=False)
+    yaml.dump(modelpar_file, outfile, sort_keys=False)
 
 
 '''
