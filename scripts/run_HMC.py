@@ -156,7 +156,7 @@ with pm.Model() as model:
             theta_list.append(0.0)
     theta = tt.stack(theta_list)
     # Model
-    model_spec = pm.Deterministic('model_spec', model.nn(theta))
+    model_spec = pm.Deterministic('model_spec', NN_model.nn_tt(theta))
     # Likelihood
     spec = pm.Normal('spec', mu=model_spec, sd=1/snr, observed=spec_true)
     # Sampling
