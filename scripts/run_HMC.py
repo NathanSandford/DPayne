@@ -128,18 +128,18 @@ else:
 '''
 Load the trained NN
 '''
-model = load_trained_model(model_name, nn_dir, theano_wrap=True)
+NN_model = load_trained_model(model_name, nn_dir, theano_wrap=True)
 
 labels_to_fit = other_to_fit + elements_to_fit
-assert set(labels_to_fit) <= set(model.labels),\
-    f'{set(labels_to_fit)- set(model.labels)} not label(s) in the model'
+assert set(labels_to_fit) <= set(NN_model.labels),\
+    f'{set(labels_to_fit)- set(NN_model.labels)} not label(s) in the model'
 
 
 '''
 Generate Mock Spectrum
 '''
-theta_true = np.zeros(model.dim_in)
-spec_true = model.nn_tt(theta_true).eval()
+theta_true = np.zeros(NN_model.dim_in)
+spec_true = NN_model.nn_tt(theta_true).eval()
 spec_true += 1/snr * spec_true * np.random.normal(size=spec_true.shape[0])
 
 
@@ -149,7 +149,7 @@ Run HMC
 with pm.Model() as model:
     # Priors
     theta_list = []
-    for label in model.labels:
+    for label in NN_model.labels:
         if label in labels_to_fit:
             theta_list.append(pm.Uniform(label, lower=-0.5, upper=0.5))
         else:
