@@ -50,7 +50,7 @@ parser.add_argument("--nn_dir", "-ndir", help=f"Directory of NN files (default: 
 parser.add_argument("--hmc_dir", "-hdir", help=f"Output directory for HMC (default: {hmc_dir.name})")
 
 
-parser.add_argument("--labels_to_fit", "-X", nargs='+',
+parser.add_argument("--elements_to_fit", "-X", nargs='+',
                     help=f"Elements to fit (default: {' '.join(elements_to_fit)})")
 parser.add_argument("--other_to_fit", "-oX", nargs='+',
                     help=f"Other labels to fit (default: {' '.join(other_to_fit)})")
