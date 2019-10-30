@@ -62,9 +62,9 @@ parser.add_argument("--ntune", "-Nt", type=int,
                     help=f"Number of tuning steps / chain (default: {ntune})")
 parser.add_argument("--nsample", "-Ns", type=int,
                     help=f"Number of samples / chain (default: {nsamples})")
-parser.add_argument("--cores", "-c", type=int,
+parser.add_argument("--cores", "-co", type=int,
                     help=f"Number of Cores (default: {cores})")
-parser.add_argument("--chains", "-c", type=int,
+parser.add_argument("--chains", "-ch", type=int,
                     help=f"Number of Chains (default: {chains})")
 parser.add_argument("--continue_from_previous", '-cont', action="store_true", default=False,
                     help=f"Continue previous HMC run (default: False)")

@@ -18,7 +18,7 @@
 # Wall clock limit:
 #SBATCH --time=12:00:00
 #
-#SBATCH --output=logs/run_hmc.txt
+#SBATCH --output=logs/run_hmc_100.txt
 #
 # Email upon completion:
 #SBATCH --mail-type=END
