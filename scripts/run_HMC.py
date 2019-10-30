@@ -163,9 +163,9 @@ with pm.Model() as model:
     backend = HDF5(hmc_trace)
     trace = pm.sample(nsamples, tune=ntune, chains=chains, cores=cores, trace=backend)
 
-samples = pd.DataFrame(columns=model.labels)
+samples = pd.DataFrame(columns=NN_model.labels)
 samples[labels_to_fit] = trace_to_dataframe(trace, varnames=labels_to_fit)
-samples = rescale_labels(samples, model.x_min, model.x_max)
+samples = rescale_labels(samples, NN_model.x_min, NN_model.x_max)
 samples.to_hdf(hmc_samples, f'SNR={snr}')
 
 fig = corner(samples[labels_to_fit], labels=labels_to_fit, show_titles=True)
