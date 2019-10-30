@@ -21,6 +21,7 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 from . import radam
+from . import torch2theano
 from .utils import scale_labels
 
 
@@ -45,10 +46,12 @@ class Model:
                                      num_features=self.num_features,
                                      mask_size=self.mask_size,
                                      num_pixel=self.num_pixel)
+
         self.x_min = None
         self.x_max = None
         self.training_loss = None
         self.validation_loss = None
+        self.nn_tt = None
 
     def load_model(self, model_file):
         state_dict = torch.load(model_file)
@@ -63,6 +66,9 @@ class Model:
         with np.load(loss_file) as tmp:
             self.training_loss = tmp['training_loss']
             self.validation_loss = tmp['validation_loss']
+
+    def theano_wrap(self):
+        self.nn_tt = torch2theano.pytorch_wrapper(self.nn, dtype=torch.FloatTensor)
 
 
 # ===================================================================================================
@@ -349,11 +355,10 @@ def train_nn(
         training_loss=training_loss,
         validation_loss=validation_loss,
     )
-
     return
 
 
-def load_trained_model(model_name, nn_dir):
+def load_trained_model(model_name, nn_dir, theano_wrap=False):
     modelpar_file = Path(nn_dir).joinpath(f'{model_name}_par.yml')
     model_file = Path(nn_dir).joinpath(f'{model_name}_model.pt')
     scaling_file = Path(nn_dir).joinpath(f'{model_name}_scaling.npz')
@@ -364,4 +369,6 @@ def load_trained_model(model_name, nn_dir):
     model.load_model(model_file)
     model.load_scaling(scaling_file)
     model.load_loss(loss_file)
+    if theano_wrap:
+        model.theano_wrap()
     return model
