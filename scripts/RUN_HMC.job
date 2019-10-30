@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Job name:
-#SBATCH --job-name=run_hmc
+#SBATCH --job-name=run_hmc_100
 #
 # Account:
 #SBATCH --account=co_dweisz
@@ -16,7 +16,7 @@
 #SBATCH --nodes=1
 #
 # Wall clock limit:
-#SBATCH --time=1:00:00
+#SBATCH --time=12:00:00
 #
 #SBATCH --output=logs/run_hmc.txt
 #
@@ -28,6 +28,7 @@
 
 echo "Loading Module"
 module load python
+source activate payne
 
 echo "Beginning Script"
-python run_HMC.py ../NN_data/KGiant_LAMOST_17_NN.npz 100 ../NN_data/KGiant_LAMOST_17_samples.h5
+python run_HMC.py -model_name=R6500p -snr=100 -rand 3457
