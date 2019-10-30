@@ -101,8 +101,6 @@ if args.cores:
     cores = args.cores
 if args.chains:
     chains = args.chains
-if args.mask_size:
-    mask_size = args.mask_size
 
 snr = args.snr
 model_name = args.model_name
