@@ -2,6 +2,7 @@ import sys
 sys.path.append('/global/scratch/nathan_sandford/DPayne/')
 import argparse
 from pathlib import Path
+import yaml
 import pandas as pd
 from DPayne.utils import split_data
 from DPayne import neural_networks
@@ -110,6 +111,7 @@ if args.mask_size:
 
 model_name = args.model_name
 model_file = nn_dir.joinpath(f'{model_name}_model.pt')
+modelpar_file = nn_dir.joinpath(f'{model_name}_par.npz')
 scaling_file = nn_dir.joinpath(f'{model_name}_scaling.npz')
 loss_file = nn_dir.joinpath(f'{model_name}_loss.npz')
 
@@ -133,6 +135,27 @@ labels_to_train_on = other_to_train_on + elements_to_train_on
 training_labels, training_spectra, validation_labels, validation_spectra \
     = split_data(spectra, labels, labels_to_train_on,
                  randomize=True, random_state=random_state)
+
+if arch_type == 'perceptron':
+    model_par = dict(name=model_name,
+                     arch_type=arch_type,
+                     labels=labels_to_train_on,
+                     num_pixel=training_spectra.shape[1],
+                     num_neurons=num_neurons,
+                     random_state=random_state,
+                     )
+if arch_type == 'resnet':
+    model_par = dict(name=model_name,
+                     arch_type=arch_type,
+                     labels=labels_to_train_on,
+                     num_pixel=training_spectra.shape[1],
+                     num_neurons=num_neurons,
+                     num_features=num_features,
+                     mask_size=mask_size,
+                     random_state=random_state,
+                     )
+with open(f'{model_name}_par.yml', 'wt') as outfile:
+    yaml.dump(model_par, outfile, sort_keys=False)
 
 
 '''
