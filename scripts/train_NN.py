@@ -164,20 +164,20 @@ Train The Payne
 print(f'Training on {training_spectra.shape[0]} spectra')
 print(f'Validating w/ {validation_spectra.shape[0]} spectra')
 print(f'Labels: {" ".join(labels_to_train_on)}')
-training_loss, validation_loss = neural_networks.train_nn(training_labels=training_labels,
-                                                          training_spectra=training_spectra,
-                                                          validation_labels=validation_labels,
-                                                          validation_spectra=validation_spectra,
-                                                          num_neurons=num_neurons,
-                                                          num_steps=num_steps,
-                                                          learning_rate=learning_rate,
-                                                          batch_size=batch_size,
-                                                          num_features=num_features,
-                                                          mask_size=mask_size,
-                                                          num_pixel=training_spectra.shape[1],
-                                                          arch_type=arch_type,
-                                                          nn_dir=nn_dir,
-                                                          model_name=model_name,
-                                                          continue_from_model=continue_from_model, )
+neural_networks.train_nn(training_labels=training_labels,
+                         training_spectra=training_spectra,
+                         validation_labels=validation_labels,
+                         validation_spectra=validation_spectra,
+                         num_neurons=num_neurons,
+                         num_steps=num_steps,
+                         learning_rate=learning_rate,
+                         batch_size=batch_size,
+                         num_features=num_features,
+                         mask_size=mask_size,
+                         num_pixel=training_spectra.shape[1],
+                         arch_type=arch_type,
+                         nn_dir=nn_dir,
+                         model_name=model_name,
+                         continue_from_model=continue_from_model, )
 
 print('Training Complete!')
