@@ -1,6 +1,7 @@
 import sys
 sys.path.append('/global/scratch/nathan_sandford/DPayne/')
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
@@ -14,7 +15,7 @@ import matplotlib.pyplot as plt
 from corner import corner
 
 from DPayne.neural_networks import load_trained_model
-from DPayne.utils import rescale_labels
+from DPayne.utils import scale_labels, rescale_labels
 
 description = \
     '''
@@ -32,6 +33,7 @@ hmc_dir = base_dir.joinpath('hmc_output')
 # HMC Settings
 elements_to_fit = ['Fe', 'Ca', 'Ni', 'Si', 'Ti', 'Co', 'Mg']
 other_to_fit = ['Teff', 'logg', 'v_micro']
+priors = {}
 random_state = 3457
 cores = 24
 chains = 24
@@ -54,10 +56,11 @@ parser.add_argument("--elements_to_fit", "-X", nargs='+',
                     help=f"Elements to fit (default: {' '.join(elements_to_fit)})")
 parser.add_argument("--other_to_fit", "-oX", nargs='+',
                     help=f"Other labels to fit (default: {' '.join(other_to_fit)})")
+parser.add_argument("--priors", "-p", type=str,
+                    help=f'Dictionary of {"label": sigma} (default: {priors})')
+
 parser.add_argument("--random_state", "-rand", type=int,
                     help=f"Random state to initialize HMC (default: {random_state})")
-
-
 parser.add_argument("--ntune", "-Nt", type=int,
                     help=f"Number of tuning steps / chain (default: {ntune})")
 parser.add_argument("--nsample", "-Ns", type=int,
@@ -90,9 +93,11 @@ if args.elements_to_fit:
     elements_to_fit = args.elements_to_fit
 if args.other_to_fit:
     other_to_fit = args.other_to_fit
+if args.priors:
+    priors = json.loads(args.priors.replace("\'", '\"'))
+
 if args.random_state:
     random_state = args.random_state
-
 if args.ntune:
     ntune = args.ntune
 if args.nsample:
@@ -130,9 +135,17 @@ Load the trained NN
 '''
 NN_model = load_trained_model(model_name, nn_dir, theano_wrap=True)
 
+
+'''
+Check Model Labels
+'''
 labels_to_fit = other_to_fit + elements_to_fit
 assert set(labels_to_fit) <= set(NN_model.labels),\
     f'{set(labels_to_fit)- set(NN_model.labels)} not label(s) in the model'
+assert set(priors.keys()) <= set(NN_model.labels), \
+    f'Priors {set(labels_to_fit) - set(NN_model.labels)} not label(s) in the model'
+assert set(priors.keys()) <= set(labels_to_fit), \
+    f'Priors {set(priors.keys()) - set(labels_to_fit)} not being fit'
 
 
 '''
@@ -144,6 +157,17 @@ spec_true += 1/snr * spec_true * np.random.normal(size=spec_true.shape[0])
 
 
 '''
+Scale Priors
+'''
+scaled_priors = {}
+if priors:
+    for label in priors:
+        lab_ind = np.argwhere(np.array(labels_to_fit) == label)[0][0]
+        lab = rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[lab_ind] + priors[label]
+        scaled_priors[label] = scale_labels(lab, NN_model.x_min, NN_model.x_max)[lab_ind]
+
+
+'''
 Run HMC
 '''
 with pm.Model() as model:
@@ -151,7 +175,10 @@ with pm.Model() as model:
     theta_list = []
     for label in NN_model.labels:
         if label in labels_to_fit:
-            theta_list.append(pm.Uniform(label, lower=-0.5, upper=0.5))
+            if label in priors:
+                theta_list.append(pm.Bound(pm.Normal, lower=-0.5, upper=0.5)(label, mu=0.0, sigma=scaled_priors[label]))
+            else:
+                theta_list.append(pm.Uniform(label, lower=-0.5, upper=0.5))
         else:
             theta_list.append(0.0)
     theta = tt.stack(theta_list)
