@@ -74,6 +74,9 @@ class Model:
     def theano_wrap(self):
         self.nn_tt = torch2theano.pytorch_wrapper(self.nn, dtype=torch.FloatTensor)
 
+    def spec(self, labels):
+        pass
+
 
 # ===================================================================================================
 # simple multi-layer perceptron model
@@ -133,7 +136,7 @@ class PayneResnet(torch.nn.Module):
         self.pix_per_channel = pix_per_channel
 
     def forward(self, x):
-        x = self.features(x)[None, :]
+        x = self.features(x)[:, None, :]
         x = x.view(x.shape[0], 64, self.pix_per_channel)
         x1 = self.deconv1(x)
 
