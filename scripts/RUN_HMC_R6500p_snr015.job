@@ -39,4 +39,5 @@ echo "Beginning Script"
 #                  [--nsample NSAMPLE] [--cores CORES] [--chains CHAINS]
 #                  [--continue_from_previous]
 #                  model_name snr
-python run_HMC.py R6500p 15 -rand=3457 -X Fe Ca Ni Si Ti -p '{"Teff": 100, "logg": 0.15}'
+python run_HMC.py R6500p 15 -rand=3457 -X Fe Ca Ni Si Ti Co Mg \
+       -p '{"Teff": 100, "logg": 0.15, "v_micro": 0.22}'
