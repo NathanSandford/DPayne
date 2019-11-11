@@ -10,6 +10,7 @@ import theano.tensor as tt
 import pymc3 as pm
 from pymc3.backends import HDF5
 from pymc3.backends.tracetab import trace_to_dataframe
+from scipy.stats import truncnorm
 
 import matplotlib.pyplot as plt
 from corner import corner
@@ -196,5 +197,26 @@ samples[labels_to_fit] = trace_to_dataframe(trace, varnames=labels_to_fit)
 samples = rescale_labels(samples, NN_model.x_min, NN_model.x_max)
 samples.to_hdf(hmc_samples, f'SNR={snr}')
 
-fig = corner(samples[labels_to_fit], labels=labels_to_fit, show_titles=True)
+'''
+Plot Corner Plot
+'''
+ndim = len(labels_to_fit)
+fig = corner(samples, labels=labels_to_fit, truths=rescale_labels(theta_true, NN_model.x_min, NN_model.x_max),
+             show_titles=True, quantiles=(0.16, 0.50, 0.84),
+             range=list(zip(NN_model.x_min, NN_model.x_max)), scale_hist=True,
+             max_n_ticks=3,
+             label_kwargs=dict(size=24),
+             hist_kwargs=dict(density=True))
+
+axes = np.array(fig.axes).reshape((ndim, ndim))
+for i, label in enumerate(labels_to_fit):  # Overplot priors
+    ax = axes[i, i]
+    if label in priors:
+        a = (NN_model.x_min[i] - rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[i]) / priors[label]
+        b = (NN_model.x_max[i] - rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[i]) / priors[label]
+        x = np.linspace(NN_model.x_min[i], NN_model.x_max[i], 1000)
+        prior_dist = truncnorm.pdf(x, a, b,
+                                   loc=rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[i],
+                                   scale=priors[label])
+        ax.plot(x, prior_dist)
 plt.savefig(hmc_corner)
