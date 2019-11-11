@@ -41,4 +41,4 @@ module load python
 source activate payne
 
 echo "Beginning Script"
-python train_NN.py R30000p R30000.h5 'perceptron' --rand 6787
+python train_NN.py R30000p R30000.h5 'perceptron' --rand 6787 -cont

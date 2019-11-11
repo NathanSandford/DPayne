@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# Job name:
+#SBATCH --job-name=run_hmc_050
+#
+# Account:
+#SBATCH --account=co_dweisz
+#
+# Partition:
+#SBATCH --partition=savio2
+#
+# QoS:
+#SBATCH --qos=dweisz_savio2_normal
+#
+# Number of Nodes
+#SBATCH --nodes=1
+#
+# Wall clock limit:
+#SBATCH --time=12:00:00
+#
+#SBATCH --output=logs/run_hmc_050.txt
+#
+# Email upon completion:
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan_sandford@berkeley.edu
+#
+## Commands to run:
+
+echo "Loading Module"
+module load python
+source activate payne
+
+echo "Beginning Script"
+#usage: run_HMC.py [-h] [--base_dir BASE_DIR] [--nn_dir NN_DIR]
+#                  [--hmc_dir HMC_DIR]
+#                  [--labels_to_fit LABELS_TO_FIT [LABELS_TO_FIT ...]]
+#                  [--other_to_fit OTHER_TO_FIT [OTHER_TO_FIT ...]]
+#                  [--random_state RANDOM_STATE] [--ntune NTUNE]
+#                  [--nsample NSAMPLE] [--cores CORES] [--chains CHAINS]
+#                  [--continue_from_previous]
+#                  model_name snr
+python run_HMC.py R6500p 50 -rand=3457 -X Fe Ca Ni Si Ti Co Mg -p '{"Teff": 100, "logg": 0.15}'
