@@ -36,16 +36,20 @@ class Model:
         self.num_neurons = model_par['num_neurons']
         if self.arch_type == 'perceptron':
             self.nn = PaynePerceptron(dim_in=self.dim_in,
-                                         num_neurons=self.num_neurons,
-                                         num_pixel=self.num_pixel)
+                                      num_neurons=self.num_neurons,
+                                      num_pixel=self.num_pixel)
         elif self.arch_type == 'resnet':
-            self.num_features = model_par['pix_per_channel']
+            self.pix_per_channel = model_par['pix_per_channel']
             self.kernel_size = model_par['kernel_size']
+            self.stride = model_par['stride']
+            self.padding = model_par['padding']
             self.nn = PayneResnet(dim_in=self.dim_in,
+                                  num_pixel=self.num_pixel,
                                   num_neurons=self.num_neurons,
-                                  num_features=self.num_features,
+                                  pix_per_channel=self.pix_per_channel,
                                   kernel_size=self.kernel_size,
-                                  num_pixel=self.num_pixel)
+                                  stride=self.stride,
+                                  padding=self.padding)
 
         self.x_min = None
         self.x_max = None
