@@ -57,7 +57,7 @@ parser.add_argument("--elements_to_fit", "-X", nargs='+',
 parser.add_argument("--other_to_fit", "-oX", nargs='+',
                     help=f"Other labels to fit (default: {' '.join(other_to_fit)})")
 parser.add_argument("--priors", "-p", type=str,
-                    help=f'Dictionary of {"label": sigma} (default: {priors})')
+                    help='Dictionary of {"label": sigma} (default: {})')
 
 parser.add_argument("--random_state", "-rand", type=int,
                     help=f"Random state to initialize HMC (default: {random_state})")
