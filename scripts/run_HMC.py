@@ -116,9 +116,10 @@ assert model_file.exists(), f'{model_file} does not exist'
 assert scaling_file.exists(), f'{scaling_file} does not exist'
 if not loss_file.exists():
     print(f'{loss_file} does not exist. Continuing anyway...')
-hmc_trace = hmc_dir.joinpath(f'{model_name}_snr{snr:02d}_trace.h5')
-hmc_samples = hmc_dir.joinpath(f'{model_name}_snr{snr:02d}_samples.h5')
-hmc_corner = hmc_dir.joinpath(f'{model_name}_snr{snr:02d}_corner.png')
+hmc_trace = hmc_dir.joinpath(f'{model_name}_snr{snr:03d}_trace.h5')
+hmc_samples = hmc_dir.joinpath(f'{model_name}_snr{snr:03d}_samples.h5')
+hmc_corner = hmc_dir.joinpath(f'{model_name}_snr{snr:03d}_corner.png')
+hmc_truespec = hmc_dir.joinpath(f'{model_name}_snr{snr:03d}_spec.npy')
 
 continue_from_previous = args.continue_from_previous
 if continue_from_previous:
@@ -154,7 +155,7 @@ Generate Mock Spectrum
 theta_true = np.zeros(NN_model.dim_in)
 spec_true = NN_model.nn_tt(theta_true).eval()
 spec_true += 1/snr * spec_true * np.random.normal(size=spec_true.shape[0])
-
+np.save(hmc_truespec, spec_true)
 
 '''
 Scale Priors
