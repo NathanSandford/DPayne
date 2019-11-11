@@ -37,8 +37,8 @@ priors = {}
 random_state = 3457
 cores = 24
 chains = 24
-ntune = 750
-nsamples = 250
+ntune = 1500
+nsamples = 3000
 
 '''
 Parse Args
