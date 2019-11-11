@@ -39,13 +39,13 @@ class Model:
                                          num_neurons=self.num_neurons,
                                          num_pixel=self.num_pixel)
         elif self.arch_type == 'resnet':
-            self.num_features = model_par['num_features']
-            self.mask_size = model_par['mask_size']
+            self.num_features = model_par['pix_per_channel']
+            self.kernel_size = model_par['kernel_size']
             self.nn = PayneResnet(dim_in=self.dim_in,
-                                     num_neurons=self.num_neurons,
-                                     num_features=self.num_features,
-                                     mask_size=self.mask_size,
-                                     num_pixel=self.num_pixel)
+                                  num_neurons=self.num_neurons,
+                                  num_features=self.num_features,
+                                  kernel_size=self.kernel_size,
+                                  num_pixel=self.num_pixel)
 
         self.x_min = None
         self.x_max = None
@@ -74,7 +74,7 @@ class Model:
 # ===================================================================================================
 # simple multi-layer perceptron model
 class PaynePerceptron(torch.nn.Module):
-    def __init__(self, dim_in, num_neurons, num_pixel):
+    def __init__(self, dim_in, num_pixel, num_neurons):
         super(PaynePerceptron, self).__init__()
         self.features = torch.nn.Sequential(
             torch.nn.Linear(dim_in, num_neurons),
@@ -95,29 +95,29 @@ class PaynePerceptron(torch.nn.Module):
 # ---------------------------------------------------------------------------------------------------
 # resnet models
 class PayneResnet(torch.nn.Module):
-    def __init__(self, dim_in, num_neurons, num_features, mask_size, num_pixel):
+    def __init__(self, dim_in, num_pixel, num_neurons, pix_per_channel, kernel_size, stride, padding):
         super(PayneResnet, self).__init__()
         self.features = torch.nn.Sequential(
             torch.nn.Linear(dim_in, num_neurons),
             torch.nn.LeakyReLU(),
             torch.nn.Linear(num_neurons, num_neurons),
             torch.nn.LeakyReLU(),
-            torch.nn.Linear(num_neurons, num_features),
+            torch.nn.Linear(num_neurons, 64*pix_per_channel),
         )
 
-        self.deconv1 = torch.nn.ConvTranspose1d(64, 64, mask_size, stride=3, padding=5)
-        self.deconv2 = torch.nn.ConvTranspose1d(64, 64, mask_size, stride=3, padding=5)
-        self.deconv3 = torch.nn.ConvTranspose1d(64, 64, mask_size, stride=3, padding=5)
-        self.deconv4 = torch.nn.ConvTranspose1d(64, 64, mask_size, stride=3, padding=5)
-        self.deconv5 = torch.nn.ConvTranspose1d(64, 64, mask_size, stride=3, padding=5)
-        self.deconv6 = torch.nn.ConvTranspose1d(64, 32, mask_size, stride=3, padding=5)
-        self.deconv7 = torch.nn.ConvTranspose1d(32, 1, mask_size, stride=3, padding=5)
+        self.deconv1 = torch.nn.ConvTranspose1d(64, 64, kernel_size, stride=stride, padding=padding)
+        self.deconv2 = torch.nn.ConvTranspose1d(64, 64, kernel_size, stride=stride, padding=padding)
+        self.deconv3 = torch.nn.ConvTranspose1d(64, 64, kernel_size, stride=stride, padding=padding)
+        self.deconv4 = torch.nn.ConvTranspose1d(64, 64, kernel_size, stride=stride, padding=padding)
+        self.deconv5 = torch.nn.ConvTranspose1d(64, 64, kernel_size, stride=stride, padding=padding)
+        self.deconv6 = torch.nn.ConvTranspose1d(64, 32, kernel_size, stride=stride, padding=padding)
+        self.deconv7 = torch.nn.ConvTranspose1d(32,  1, kernel_size, stride=stride, padding=padding)
 
-        self.deconv2b = torch.nn.ConvTranspose1d(64, 64, 1, stride=3)
-        self.deconv3b = torch.nn.ConvTranspose1d(64, 64, 1, stride=3)
-        self.deconv4b = torch.nn.ConvTranspose1d(64, 64, 1, stride=3)
-        self.deconv5b = torch.nn.ConvTranspose1d(64, 64, 1, stride=3)
-        self.deconv6b = torch.nn.ConvTranspose1d(64, 32, 1, stride=3)
+        self.deconv2b = torch.nn.ConvTranspose1d(64, 64, 1, stride=stride)
+        self.deconv3b = torch.nn.ConvTranspose1d(64, 64, 1, stride=stride)
+        self.deconv4b = torch.nn.ConvTranspose1d(64, 64, 1, stride=stride)
+        self.deconv5b = torch.nn.ConvTranspose1d(64, 64, 1, stride=stride)
+        self.deconv6b = torch.nn.ConvTranspose1d(64, 32, 1, stride=stride)
 
         self.relu2 = torch.nn.LeakyReLU()
         self.relu3 = torch.nn.LeakyReLU()
@@ -126,10 +126,11 @@ class PayneResnet(torch.nn.Module):
         self.relu6 = torch.nn.LeakyReLU()
 
         self.num_pixel = num_pixel
+        self.pix_per_channel = pix_per_channel
 
     def forward(self, x):
-        x = self.features(x)[:, None, :]
-        x = x.view(x.shape[0], 64, 5)
+        x = self.features(x)[None, :]
+        x = x.view(x.shape[0], 64, self.pix_per_channel)
         x1 = self.deconv1(x)
 
         x2 = self.deconv2(x1)
@@ -167,13 +168,15 @@ def train_nn(
     training_spectra,
     validation_labels,
     validation_spectra,
+    num_pixel=7214,
     num_neurons=300,
     num_steps=1e5,
     learning_rate=1e-4,
     batch_size=512,
-    num_features=64 * 5,
-    mask_size=11,
-    num_pixel=7214,
+    pix_per_channel=5,
+    kernel_size=11,
+    stride=3,
+    padding=5,
     arch_type="perceptron",
     nn_dir="./neural_nets",
     model_name="NN",
@@ -206,7 +209,7 @@ def train_nn(
     This is also tunable, but 1e-4 seems to work well for most use cases. Again,
     diagnose with a validation set if you change this.
 
-    num_features is the number of features before the deconvolutional layers; it only
+    pix_per_channel is the number of features before the deconvolutional layers; it only
     applies if ResNet is used. For the simple multi-layer perceptron model, this parameter
     is not used. We truncate the predicted model if the output number of pixels is
     larger than what is needed. In the current default model, the output is ~8500 pixels
@@ -226,7 +229,6 @@ def train_nn(
     scaling_file = nn_dir.joinpath(f'{model_name}_scaling.npz')
     model_file = nn_dir.joinpath(f'{model_name}_model.pt')
     loss_file = nn_dir.joinpath(f'{model_name}_loss.npz')
-    print(loss_file)
 
     # run on cuda
     dtype = torch.cuda.FloatTensor
@@ -252,15 +254,13 @@ def train_nn(
     x = Variable(torch.from_numpy(x)).type(dtype)
     y = Variable(torch.from_numpy(training_spectra), requires_grad=False).type(dtype)
     x_valid = Variable(torch.from_numpy(x_valid)).type(dtype)
-    y_valid = Variable(torch.from_numpy(validation_spectra), requires_grad=False).type(
-        dtype
-    )
+    y_valid = Variable(torch.from_numpy(validation_spectra), requires_grad=False).type(dtype)
 
     # initiate Payne and optimizer
     if arch_type == "perceptron":
-        model = PaynePerceptron(dim_in, num_neurons, num_pixel)
+        model = PaynePerceptron(dim_in, num_pixel, num_neurons)
     elif arch_type == "resnet":
-        model = PayneResnet(dim_in, num_neurons, num_features, mask_size, num_pixel)
+        model = PayneResnet(dim_in, num_pixel, num_neurons, pix_per_channel, kernel_size, stride, padding)
     if continue_from_model:
         model.load(model_file)
 

@@ -30,8 +30,10 @@ num_neurons = 300
 num_steps = 1e5
 learning_rate = 1e-4
 batch_size = 512
-num_features = 64*5
-mask_size = 11
+pix_per_channel = 5
+kernel_size = 11
+stride = 3
+padding = 5
 
 '''
 Parse Args
@@ -63,10 +65,14 @@ parser.add_argument("--learning_rate", "-lr", type=int,
                     help=f"Learning rate (default: {learning_rate})")
 parser.add_argument("--batch_size", "-bs", type=int,
                     help=f"Batch size (default: {batch_size})")
-parser.add_argument("--num_features", "-Nf", type=int,
-                    help=f"Number of features (resnet only, default: {num_features})")
-parser.add_argument("--mask_size", "-ms", type=int,
-                    help=f"Mask size (resnet only, default: {mask_size})")
+parser.add_argument("--pix_per_channel", "-ppc", type=int,
+                    help=f"Number of pixels per channel (resnet only, default: {pix_per_channel})")
+parser.add_argument("--kernel_size", "-ms", type=int,
+                    help=f"Size of convolution kernel (resnet only, default: {kernel_size})")
+parser.add_argument("--stride", "-s", type=int,
+                    help=f"Stride for convolution kernel (resnet only, default: {stride})")
+parser.add_argument("--padding", "-p", type=int,
+                    help=f"Padding for convolution kernel (resnet only, default: {padding})")
 parser.add_argument("--continue_from_model", '-cont', action="store_true", default=False,
                     help=f"Continue training existing model (default: False)")
 args = parser.parse_args()
@@ -104,10 +110,14 @@ if args.learning_rate:
     learning_rate = args.learning_rate
 if args.batch_size:
     batch_size = args.batch_size
-if args.num_features:
-    num_features = args.num_features
-if args.mask_size:
-    mask_size = args.mask_size
+if args.pix_per_channel:
+    pix_per_channel = args.pix_per_channel
+if args.kernel_size:
+    kernel_size = args.kernel_size
+if args.stride:
+    stride = args.stride
+if args.padding:
+    padding = args.padding
 
 model_name = args.model_name
 model_file = nn_dir.joinpath(f'{model_name}_model.pt')
@@ -136,6 +146,9 @@ training_labels, training_spectra, validation_labels, validation_spectra \
     = split_data(spectra, labels, labels_to_train_on,
                  randomize=True, random_state=random_state)
 
+'''
+Init Model
+'''
 if arch_type == 'perceptron':
     model_par = dict(name=model_name,
                      arch_type=arch_type,
@@ -150,8 +163,10 @@ elif arch_type == 'resnet':
                      labels=labels_to_train_on,
                      num_pixel=training_spectra.shape[1],
                      num_neurons=num_neurons,
-                     num_features=num_features,
-                     mask_size=mask_size,
+                     pix_per_channel=pix_per_channel,
+                     kernel_size=kernel_size,
+                     stride=stride,
+                     padding=padding,
                      random_state=random_state,
                      )
 with open(f'{model_name}_par.yml', 'wt') as outfile:
@@ -168,13 +183,15 @@ neural_networks.train_nn(training_labels=training_labels,
                          training_spectra=training_spectra,
                          validation_labels=validation_labels,
                          validation_spectra=validation_spectra,
+                         num_pixel=training_spectra.shape[1],
                          num_neurons=num_neurons,
                          num_steps=num_steps,
                          learning_rate=learning_rate,
                          batch_size=batch_size,
-                         num_features=num_features,
-                         mask_size=mask_size,
-                         num_pixel=training_spectra.shape[1],
+                         pix_per_channel=pix_per_channel,
+                         kernel_size=kernel_size,
+                         stride=stride,
+                         padding=padding,
                          arch_type=arch_type,
                          nn_dir=nn_dir,
                          model_name=model_name,

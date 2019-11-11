@@ -41,4 +41,4 @@ module load python
 source activate payne
 
 echo "Beginning Script"
-python train_NN.py R30000r R30000.h5 'resnet' --rand 6787
+python train_NN.py R30000r R30000.h5 'resnet' -ppc 40 --rand 6787
