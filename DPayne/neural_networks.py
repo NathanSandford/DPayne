@@ -60,6 +60,7 @@ class Model:
     def load_model(self, model_file):
         state_dict = torch.load(model_file)
         self.nn.load_state_dict(state_dict)
+        self.nn.eval()
 
     def load_scaling(self, scaling_file):
         with np.load(scaling_file) as tmp:
@@ -74,8 +75,21 @@ class Model:
     def theano_wrap(self):
         self.nn_tt = torch2theano.pytorch_wrapper(self.nn, dtype=torch.FloatTensor)
 
-    def spec(self, labels):
-        pass
+    def spec(self, x, scaled=True):
+        if type(x) is np.ndarray:
+            x = torch.from_numpy(x).type(torch.FloatTensor)
+        elif type(x) is list:
+            x = torch.FloatTensor(x)
+        if x.dim() == 1:
+            x = x[None, :]
+        if not scaled:
+            x = scale_labels(x, self.x_min, self.x_max)
+        return self.nn(x)
+
+    def spec_tt(self, x, scaled=True):
+        if not scaled:
+            x = scale_labels(x, self.x_min, self.x_max)
+        return self.nn_tt(x)
 
 
 # ===================================================================================================
