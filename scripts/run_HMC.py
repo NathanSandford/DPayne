@@ -38,8 +38,8 @@ priors = {}
 random_state = 3457
 cores = 24
 chains = 24
-ntune = 1500
-nsamples = 3000
+ntune = 2000
+nsamples = 500
 
 '''
 Parse Args
@@ -193,17 +193,22 @@ with pm.Model() as model:
     trace = pm.sample(nsamples, tune=ntune, chains=chains, cores=cores, trace=backend)
 
 samples = pd.DataFrame(columns=NN_model.labels)
-samples[labels_to_fit] = trace_to_dataframe(trace, varnames=labels_to_fit)
-samples = rescale_labels(samples, NN_model.x_min, NN_model.x_max)
+samples[labels_to_fit] = trace_to_dataframe(trace, varnames=NN_model.labels)
+samples = rescale_labels(samples, NN_model.x_min, NN_model.x_max)[labels_to_fit]
 samples.to_hdf(hmc_samples, f'SNR={snr}')
+
 
 '''
 Plot Corner Plot
 '''
+x_min_fit = [NN_model.x_min[i] for i in [NN_model.labels.index(item) for item in labels_to_fit]]
+x_max_fit = [NN_model.x_max[i] for i in [NN_model.labels.index(item) for item in labels_to_fit]]
+truth_fit = [theta_true[i] for i in [NN_model.labels.index(item) for item in labels_to_fit]]
+
 ndim = len(labels_to_fit)
-fig = corner(samples, labels=labels_to_fit, truths=rescale_labels(theta_true, NN_model.x_min, NN_model.x_max),
+fig = corner(samples, labels=labels_to_fit, truths=rescale_labels(truth_fit, x_min_fit, x_max_fit),
              show_titles=True, quantiles=(0.16, 0.50, 0.84),
-             range=list(zip(NN_model.x_min, NN_model.x_max)), scale_hist=True,
+             range=list(zip(x_min_fit, x_max_fit)), scale_hist=True,
              max_n_ticks=3,
              label_kwargs=dict(size=24),
              hist_kwargs=dict(density=True))
@@ -212,11 +217,11 @@ axes = np.array(fig.axes).reshape((ndim, ndim))
 for i, label in enumerate(labels_to_fit):  # Overplot priors
     ax = axes[i, i]
     if label in priors:
-        a = (NN_model.x_min[i] - rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[i]) / priors[label]
-        b = (NN_model.x_max[i] - rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[i]) / priors[label]
-        x = np.linspace(NN_model.x_min[i], NN_model.x_max[i], 1000)
+        a = (x_min_fit[i] - rescale_labels(truth_fit, x_min_fit, x_max_fit)[i]) / priors[label]
+        b = (x_max_fit[i] - rescale_labels(truth_fit, x_min_fit, x_max_fit)[i]) / priors[label]
+        x = np.linspace(x_min_fit[i], x_max_fit[i], 1000)
         prior_dist = truncnorm.pdf(x, a, b,
-                                   loc=rescale_labels(theta_true, NN_model.x_min, NN_model.x_max)[i],
+                                   loc=rescale_labels(truth_fit, x_min_fit, x_max_fit)[i],
                                    scale=priors[label])
         ax.plot(x, prior_dist)
 plt.savefig(hmc_corner)
