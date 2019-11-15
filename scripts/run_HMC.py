@@ -99,6 +99,7 @@ if args.priors:
 
 if args.random_state:
     random_state = args.random_state
+np.random.seed(random_state)
 if args.ntune:
     ntune = args.ntune
 if args.nsample:
@@ -132,6 +133,7 @@ else:
     if hmc_samples.exists():
         print(f"Overwriting {hmc_samples}, hope that's okay")
 
+
 '''
 Load the trained NN
 '''
@@ -155,8 +157,18 @@ Generate Mock Spectrum
 '''
 theta_true = np.zeros(NN_model.dim_in)
 spec_true = NN_model.nn_tt(theta_true).eval()
-spec_true += 1/snr * spec_true * np.random.normal(size=spec_true.shape[0])
+noisy_spec = spec_true + np.random.normal(0, scale=spec_true/snr, size=spec_true.shape[0])
 np.save(hmc_truespec, spec_true)
+
+
+'''
+Scale Priors
+'''
+tmp = [NN_model.labels.index(item) for item in labels_to_fit]
+x_min_fit = NN_model.x_min[tmp]
+x_max_fit = NN_model.x_max[tmp]
+truth_fit = theta_true[tmp]
+
 
 '''
 Scale Priors
@@ -185,26 +197,23 @@ with pm.Model() as model:
             theta_list.append(0.0)
     theta = tt.stack(theta_list)
     # Model
-    model_spec = pm.Deterministic('model_spec', NN_model.nn_tt(theta))
+    model_spec = NN_model.nn_tt(theta)
     # Likelihood
-    spec = pm.Normal('spec', mu=model_spec, sd=1/snr, observed=spec_true)
+    spec = pm.Normal('spec', mu=model_spec, sd=spec_true/snr, observed=spec_true)
     # Sampling
     backend = HDF5(hmc_trace)
     trace = pm.sample(nsamples, tune=ntune, chains=chains, cores=cores, trace=backend)
 
-samples = pd.DataFrame(columns=NN_model.labels)
-samples[labels_to_fit] = trace_to_dataframe(trace, varnames=NN_model.labels)
-samples = rescale_labels(samples, NN_model.x_min, NN_model.x_max)[labels_to_fit]
+
+samples = pd.DataFrame(columns=labels_to_fit)
+samples[labels_to_fit] = trace_to_dataframe(trace, varnames=labels_to_fit)
+samples = rescale_labels(samples, x_min_fit, x_max_fit)
 samples.to_hdf(hmc_samples, f'SNR={snr}')
 
 
 '''
 Plot Corner Plot
 '''
-x_min_fit = [NN_model.x_min[i] for i in [NN_model.labels.index(item) for item in labels_to_fit]]
-x_max_fit = [NN_model.x_max[i] for i in [NN_model.labels.index(item) for item in labels_to_fit]]
-truth_fit = [theta_true[i] for i in [NN_model.labels.index(item) for item in labels_to_fit]]
-
 ndim = len(labels_to_fit)
 fig = corner(samples, labels=labels_to_fit, truths=rescale_labels(truth_fit, x_min_fit, x_max_fit),
              show_titles=True, quantiles=(0.16, 0.50, 0.84),
@@ -212,7 +221,6 @@ fig = corner(samples, labels=labels_to_fit, truths=rescale_labels(truth_fit, x_m
              max_n_ticks=3,
              label_kwargs=dict(size=24),
              hist_kwargs=dict(density=True))
-
 axes = np.array(fig.axes).reshape((ndim, ndim))
 for i, label in enumerate(labels_to_fit):  # Overplot priors
     ax = axes[i, i]
