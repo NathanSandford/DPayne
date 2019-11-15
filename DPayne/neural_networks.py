@@ -89,7 +89,7 @@ class Model:
     def spec_tt(self, x, scaled=True):
         if not scaled:
             x = scale_labels(x, self.x_min, self.x_max)
-        return self.nn_tt(x)
+        return self.nn_tt(x).eval()
 
 
 # ===================================================================================================
